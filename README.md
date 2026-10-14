@@ -5,6 +5,12 @@ A clean-room scheduling SaaS MVP inspired by common appointment-booking workflow
 ## Implemented
 
 - Responsive scheduling dashboard
+- Email/password signup and login with Auth.js
+- Protected host dashboard
+- Database-backed event types
+- Event type creation page
+- Meetings dashboard
+- Availability overview
 - Public booking page
 - PostgreSQL + Prisma data model
 - Persistent users, event types, schedules, date overrides and bookings
@@ -15,23 +21,69 @@ A clean-room scheduling SaaS MVP inspired by common appointment-booking workflow
 - Serializable booking transactions with conflict retries
 - Double-booking protection
 - Guest details and booking confirmation flow
+- Docker Postgres for local development
 - Demo seed data for `30-minute-meeting`
 - GitHub Actions build/typecheck CI
 
-## Local setup
+## Local setup from GitHub
 
-1. Copy `.env.example` to `.env` and set `DATABASE_URL` to a PostgreSQL database.
-2. Install dependencies and create the schema:
+Requirements: Git, Node.js 20+ and Docker Desktop.
 
 ```bash
+git clone https://github.com/iparthapps-hash/booking-platform.git
+cd booking-platform
 npm install
+```
+
+Copy `.env.example` to `.env`.
+
+Windows Command Prompt:
+
+```bat
+copy .env.example .env
+```
+
+PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+macOS/Linux:
+
+```bash
+cp .env.example .env
+```
+
+Start PostgreSQL and initialise the database:
+
+```bash
+npm run db:start
 npm run db:generate
 npm run db:push
 npm run db:seed
+```
+
+Then start the web app:
+
+```bash
 npm run dev
 ```
 
-Open `http://localhost:3000` for the host dashboard and `http://localhost:3000/book/30-minute-meeting` for the public booking flow.
+Open `http://localhost:3000`.
+
+Demo login:
+
+- Email: `host@example.com`
+- Password: `demo12345`
+
+Public demo booking page: `http://localhost:3000/book/30-minute-meeting`
+
+To stop PostgreSQL:
+
+```bash
+npm run db:stop
+```
 
 ## API
 
@@ -39,37 +91,22 @@ Open `http://localhost:3000` for the host dashboard and `http://localhost:3000/b
 
 `GET /api/availability?slug=30-minute-meeting&date=2026-10-15`
 
-Returns event metadata and currently bookable UTC timestamps for that local schedule date.
-
 ### Create booking
 
 `POST /api/bookings`
-
-```json
-{
-  "slug": "30-minute-meeting",
-  "startsAt": "2026-10-15T00:00:00.000Z",
-  "guestName": "Guest Name",
-  "guestEmail": "guest@example.com",
-  "guestTimezone": "Pacific/Auckland",
-  "notes": "Optional"
-}
-```
 
 The API rechecks availability and creates the booking inside a PostgreSQL `Serializable` transaction. If another guest wins the slot first, the API returns HTTP 409 rather than creating a conflicting booking.
 
 ## Next milestones
 
-1. Authentication + protected host dashboard
-2. Persistent event-type editor
-3. Availability editor UI
-4. Meetings dashboard
-5. Reschedule/cancel lifecycle
-6. Google Calendar adapter
-7. Microsoft Calendar adapter
-8. Email confirmations/reminders
-9. Workflows
-10. Payments and team scheduling
+1. Event type editing
+2. Availability editor with weekly hours/date overrides
+3. Reschedule/cancel lifecycle
+4. Google Calendar adapter
+5. Microsoft Calendar adapter
+6. Email confirmations/reminders
+7. Workflows
+8. Payments and team scheduling
 
 ## Clean-room note
 
