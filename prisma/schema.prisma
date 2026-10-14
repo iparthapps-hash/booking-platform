@@ -19,6 +19,7 @@ model User {
   id                    String                 @id @default(cuid())
   email                 String                 @unique
   name                  String
+  passwordHash          String?
   timezone              String                 @default("Pacific/Auckland")
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
@@ -28,16 +29,16 @@ model User {
 }
 
 model AvailabilitySchedule {
-  id        String                 @id @default(cuid())
-  userId    String
-  name      String
-  timezone  String                 @default("Pacific/Auckland")
-  isDefault Boolean                @default(false)
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
-  user      User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rules     AvailabilityRule[]
-  overrides AvailabilityOverride[]
+  id         String                 @id @default(cuid())
+  userId     String
+  name       String
+  timezone   String                 @default("Pacific/Auckland")
+  isDefault  Boolean                @default(false)
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rules      AvailabilityRule[]
+  overrides  AvailabilityOverride[]
   eventTypes EventType[]
 
   @@index([userId])
@@ -67,26 +68,26 @@ model AvailabilityOverride {
 }
 
 model EventType {
-  id                  String               @id @default(cuid())
-  ownerId             String
-  scheduleId          String
-  name                String
-  slug                String               @unique
-  description         String?
-  durationMinutes     Int                  @default(30)
-  locationType        String               @default("online")
-  locationConfig      Json?
-  minimumNoticeMinutes Int                 @default(120)
-  bufferBeforeMinutes Int                  @default(0)
-  bufferAfterMinutes  Int                  @default(0)
-  bookingWindowDays   Int                  @default(60)
-  slotIntervalMinutes Int                  @default(30)
-  active              Boolean              @default(true)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  owner               User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  schedule            AvailabilitySchedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
-  bookings            Booking[]
+  id                   String               @id @default(cuid())
+  ownerId              String
+  scheduleId           String
+  name                 String
+  slug                 String               @unique
+  description          String?
+  durationMinutes      Int                  @default(30)
+  locationType         String               @default("online")
+  locationConfig       Json?
+  minimumNoticeMinutes Int                  @default(120)
+  bufferBeforeMinutes  Int                  @default(0)
+  bufferAfterMinutes   Int                  @default(0)
+  bookingWindowDays    Int                  @default(60)
+  slotIntervalMinutes  Int                  @default(30)
+  active               Boolean              @default(true)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  owner                User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  schedule             AvailabilitySchedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+  bookings             Booking[]
 
   @@index([ownerId])
   @@index([scheduleId])
