@@ -9,12 +9,16 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:start": "docker compose up -d db",
+    "db:stop": "docker compose down"
   },
   "dependencies": {
     "@prisma/client": "6.19.0",
+    "bcryptjs": "^3.0.2",
     "luxon": "^3.7.2",
     "next": "15.5.4",
+    "next-auth": "5.0.0-beta.29",
     "react": "19.1.1",
     "react-dom": "19.1.1"
   },
