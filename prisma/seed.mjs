@@ -1,15 +1,18 @@
 import { PrismaClient } from '@prisma/client'
+import { hash } from 'bcryptjs'
 
 const prisma = new PrismaClient()
 
 async function main() {
+  const passwordHash = await hash('demo12345', 12)
   const user = await prisma.user.upsert({
     where: { email: 'host@example.com' },
-    update: { name: 'Demo Host', timezone: 'Pacific/Auckland' },
+    update: { name: 'Demo Host', timezone: 'Pacific/Auckland', passwordHash },
     create: {
       email: 'host@example.com',
       name: 'Demo Host',
       timezone: 'Pacific/Auckland',
+      passwordHash,
     },
   })
 
@@ -17,16 +20,14 @@ async function main() {
     where: { userId: user.id, isDefault: true },
   })
 
-  const schedule =
-    existingDefault ??
-    (await prisma.availabilitySchedule.create({
-      data: {
-        userId: user.id,
-        name: 'Working hours',
-        timezone: 'Pacific/Auckland',
-        isDefault: true,
-      },
-    }))
+  const schedule = existingDefault ?? await prisma.availabilitySchedule.create({
+    data: {
+      userId: user.id,
+      name: 'Working hours',
+      timezone: 'Pacific/Auckland',
+      isDefault: true,
+    },
+  })
 
   await prisma.availabilityRule.deleteMany({ where: { scheduleId: schedule.id } })
   await prisma.availabilityRule.createMany({
@@ -63,12 +64,12 @@ async function main() {
       bookingWindowDays: 60,
     },
   })
+
+  console.log('Seeded demo login: host@example.com / demo12345')
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
+  .then(async () => prisma.$disconnect())
   .catch(async (error) => {
     console.error(error)
     await prisma.$disconnect()
