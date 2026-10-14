@@ -56,8 +56,8 @@ export async function getAvailableSlotsBySlug(slug: string, date: string) {
   })
 
   const now = DateTime.utc()
-  const earliest = now.plus({ minutes: eventType.minimumNoticeMinutes })
-  const latest = now.plus({ days: eventType.bookingWindowDays })
+  const earliestMs = now.plus({ minutes: eventType.minimumNoticeMinutes }).toMillis()
+  const latestMs = now.plus({ days: eventType.bookingWindowDays }).toMillis()
   const slots: AvailableSlot[] = []
 
   for (const window of windows) {
@@ -70,21 +70,26 @@ export async function getAvailableSlotsBySlug(slug: string, date: string) {
       const endLocal = startLocal.plus({ minutes: eventType.durationMinutes })
       const startUtc = startLocal.toUTC()
       const endUtc = endLocal.toUTC()
+      const startMs = startUtc.toMillis()
 
-      if (startUtc < earliest || startUtc > latest) continue
+      if (startMs < earliestMs || startMs > latestMs) continue
 
-      const blockedStart = startUtc.minus({ minutes: eventType.bufferBeforeMinutes })
-      const blockedEnd = endUtc.plus({ minutes: eventType.bufferAfterMinutes })
+      const blockedStartMs = startUtc.minus({ minutes: eventType.bufferBeforeMinutes }).toMillis()
+      const blockedEndMs = endUtc.plus({ minutes: eventType.bufferAfterMinutes }).toMillis()
       const overlaps = existing.some((booking) => {
-        const existingStart = DateTime.fromJSDate(booking.startsAt, { zone: 'utc' })
-        const existingEnd = DateTime.fromJSDate(booking.endsAt, { zone: 'utc' })
-        return blockedStart < existingEnd && blockedEnd > existingStart
+        const existingStartMs = booking.startsAt.getTime()
+        const existingEndMs = booking.endsAt.getTime()
+        return blockedStartMs < existingEndMs && blockedEndMs > existingStartMs
       })
 
       if (!overlaps) {
+        const startsAt = startUtc.toISO()
+        const endsAt = endUtc.toISO()
+        if (!startsAt || !endsAt) continue
+
         slots.push({
-          startsAt: startUtc.toISO()!,
-          endsAt: endUtc.toISO()!,
+          startsAt,
+          endsAt,
           label: startLocal.toFormat('h:mm a'),
         })
       }
